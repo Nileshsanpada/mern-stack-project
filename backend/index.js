@@ -31,6 +31,11 @@ app.use(cors(corsOptions));
 
 const PORT = process.env.PORT || 3000;
 
+// health check for pinger services to prevent sleeping
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "active", message: "Server is awake and healthy" });
+});
+
 // api's
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/company", companyRoute);
