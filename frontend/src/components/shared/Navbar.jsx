@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { Button } from '../ui/button'
 import { Avatar, AvatarImage } from '../ui/avatar'
-import { LogOut, User2 } from 'lucide-react'
+import { LogOut, User2, Menu, X } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 
 const Navbar = () => {
     const { user } = useSelector(store => store.auth);
+    const [mobileOpen, setMobileOpen] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -28,16 +29,19 @@ const Navbar = () => {
             toast.error(error?.response?.data?.message || "Failed to logout");
         }
     }
+
     return (
-        <div className='sticky top-0 z-50 backdrop-blur-md bg-white/85 border-b border-gray-100/80 shadow-sm transition-all duration-300'>
-            <div className='flex items-center justify-between mx-auto max-w-7xl h-16 px-4 md:px-8'>
+        <div className='sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-gray-100 shadow-sm transition-all duration-300'>
+            <div className='flex items-center justify-between mx-auto max-w-7xl h-16 px-4 sm:px-6 md:px-8'>
                 <div className='flex items-center gap-2 cursor-pointer' onClick={() => navigate("/")}>
-                    <h1 className='text-2xl font-extrabold tracking-tight text-gray-900'>
+                    <h1 className='text-xl sm:text-2xl font-extrabold tracking-tight text-gray-900'>
                         Opportu<span className='text-transparent bg-clip-text bg-gradient-to-r from-[#F83002] to-[#ff6038]'>Nex</span>
                     </h1>
                 </div>
-                <div className='flex items-center gap-8'>
-                    <ul className='flex font-medium items-center gap-6 text-gray-700 text-sm md:text-base'>
+
+                {/* Desktop Navigation */}
+                <div className='hidden md:flex items-center gap-8'>
+                    <ul className='flex font-medium items-center gap-6 text-gray-700 text-base'>
                         {
                             user && user.role === 'recruiter' ? (
                                 <>
@@ -105,7 +109,83 @@ const Navbar = () => {
                         )
                     }
                 </div>
+
+                {/* Mobile Hamburger Toggle & Avatar */}
+                <div className='flex items-center gap-3 md:hidden'>
+                    {user && (
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Avatar className="cursor-pointer h-9 w-9 ring-2 ring-purple-500/20">
+                                    <AvatarImage src={user?.profile?.profilePhoto} alt={user?.fullname} />
+                                </Avatar>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-72 p-4 border border-gray-100 shadow-xl rounded-2xl bg-white">
+                                <div className='flex items-center gap-3 pb-3 border-b border-gray-100'>
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={user?.profile?.profilePhoto} alt={user?.fullname} />
+                                    </Avatar>
+                                    <div className='overflow-hidden'>
+                                        <h4 className='font-semibold text-sm text-gray-900 truncate'>{user?.fullname}</h4>
+                                        <p className='text-xs text-gray-500 truncate'>{user?.email}</p>
+                                    </div>
+                                </div>
+                                <div className='flex flex-col pt-2 gap-1 text-sm font-medium'>
+                                    {user.role === 'student' && (
+                                        <Link to="/profile" className='flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-purple-50 hover:text-[#6A38C2]'>
+                                            <User2 className='w-4 h-4' />
+                                            <span>View Profile</span>
+                                        </Link>
+                                    )}
+                                    <button onClick={logoutHandler} className='flex items-center gap-2 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 text-left w-full'>
+                                        <LogOut className='w-4 h-4' />
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    )}
+                    
+                    <button 
+                        onClick={() => setMobileOpen(!mobileOpen)} 
+                        className='p-2 rounded-lg text-gray-700 hover:bg-gray-100 focus:outline-none transition-colors'
+                        aria-label="Toggle Menu"
+                    >
+                        {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
+                </div>
             </div>
+
+            {/* Mobile Dropdown Menu */}
+            {mobileOpen && (
+                <div className='md:hidden bg-white/95 backdrop-blur-md border-b border-gray-200 px-6 pt-3 pb-6 space-y-4 animate-in slide-in-from-top duration-200'>
+                    <ul className='flex flex-col gap-3 font-medium text-gray-700 text-base'>
+                        {
+                            user && user.role === 'recruiter' ? (
+                                <>
+                                    <li><Link to="/admin/companies" onClick={() => setMobileOpen(false)} className='block py-2 hover:text-[#6A38C2]'>Companies</Link></li>
+                                    <li><Link to="/admin/jobs" onClick={() => setMobileOpen(false)} className='block py-2 hover:text-[#6A38C2]'>Jobs</Link></li>
+                                </>
+                            ) : (
+                                <>
+                                    <li><Link to="/" onClick={() => setMobileOpen(false)} className='block py-2 hover:text-[#6A38C2]'>Home</Link></li>
+                                    <li><Link to="/jobs" onClick={() => setMobileOpen(false)} className='block py-2 hover:text-[#6A38C2]'>Jobs</Link></li>
+                                    <li><Link to="/browse" onClick={() => setMobileOpen(false)} className='block py-2 hover:text-[#6A38C2]'>Browse</Link></li>
+                                </>
+                            )
+                        }
+                    </ul>
+                    {!user && (
+                        <div className='flex flex-col gap-2 pt-2 border-t border-gray-100'>
+                            <Link to="/login" onClick={() => setMobileOpen(false)} className='w-full'>
+                                <Button variant="outline" className="w-full justify-center rounded-xl font-semibold">Login</Button>
+                            </Link>
+                            <Link to="/signup" onClick={() => setMobileOpen(false)} className='w-full'>
+                                <Button className="w-full justify-center rounded-xl bg-gradient-to-r from-[#6A38C2] to-[#5b30a6] text-white font-medium shadow-md">Signup</Button>
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     )
 }
