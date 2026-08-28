@@ -27,10 +27,14 @@ export const register = async (req, res) => {
         let profilePhotoUrl = "";
         const file = req.file;
         if (file) {
-            const fileUri = getDataUri(file);
-            const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-            if (cloudResponse) {
-                profilePhotoUrl = cloudResponse.secure_url;
+            try {
+                const fileUri = getDataUri(file);
+                const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+                if (cloudResponse) {
+                    profilePhotoUrl = cloudResponse.secure_url;
+                }
+            } catch (cloudErr) {
+                console.log("Cloudinary photo upload warning:", cloudErr?.message || cloudErr);
             }
         }
 
@@ -52,7 +56,7 @@ export const register = async (req, res) => {
     } catch (error) {
         console.log("Register error:", error);
         return res.status(500).json({
-            message: "Internal server error during registration",
+            message: error?.message || "Internal server error during registration",
             success: false
         });
     }
