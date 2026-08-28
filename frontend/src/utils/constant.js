@@ -1,6 +1,6 @@
-const BASE_URL = import.meta.env.VITE_BACKEND_URL !== undefined 
-  ? import.meta.env.VITE_BACKEND_URL 
-  : (import.meta.env.MODE === 'production' ? '' : 'http://localhost:8000');
+const PROD_BACKEND_URL = "https://mern-stack-project-1-707i.onrender.com";
+
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || (import.meta.env.MODE === 'production' ? PROD_BACKEND_URL : 'http://localhost:8000');
 
 export const USER_API_END_POINT = `${BASE_URL}/api/v1/user`;
 export const JOB_API_END_POINT = `${BASE_URL}/api/v1/job`;
